@@ -5,7 +5,7 @@ import "quill/dist/quill.snow.css";
 import { io } from "socket.io-client";
 import { useNavigate, useParams } from "react-router-dom";
 import { usePermission } from "../context/PermissionContext";
-
+import "./textEditor.css";
 
 const SAVE_INTERVAL_MS = 2000;
 
@@ -144,13 +144,13 @@ export default function TextEditor() {
   const writePrompt = () => {
     setTextModal(!textModal);
   };
-  
+
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
 
   const apiCall = async () => {
     quill.enable(false);
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch("http://3.109.155.234:3001/generate-text", {
         method: "POST",
@@ -173,7 +173,7 @@ export default function TextEditor() {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
     quill.enable(true);
   };
@@ -182,20 +182,17 @@ export default function TextEditor() {
 
   console.log("username", username, "owner", owner);
   return (
-    <div className="textEditor_container">
-      <div className="textEditor_navigation">
-        <h1 className="textEditor_title" onClick={() => navigate("/")}>
-          Sync
-        </h1>
+    <div className="textEditor-container">
+      <div className="textEditor-navigation">
+        <header className="navigation">
+          <h1 className="title" onClick={() => navigate("/")}>
+            Sync
+          </h1>
+          <h3 className="subtitle">The Rhythm Of Productivity</h3>
+        </header>
       </div>
       <div className="nav">
         <h3>Room code: {documentId}</h3>
-        {(permission || username === owner) && (
-         !loading ? <button onClick={writePrompt} className="btn2">
-            Help me write
-          </button> : <h5>Loading...</h5>
-          
-        )}
       </div>
       {textModal && (
         <div className="textModal">
@@ -211,7 +208,7 @@ export default function TextEditor() {
           </button>
         </div>
       )}
-        <div className="container" ref={wrapperRef}></div>
+      <div className="container" ref={wrapperRef}></div>
     </div>
   );
 }
