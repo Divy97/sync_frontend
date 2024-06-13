@@ -6,23 +6,20 @@ import { io } from "socket.io-client";
 import { useNavigate, useParams } from "react-router-dom";
 import { usePermission } from "../context/PermissionContext";
 import "./textEditor.css";
+import { v4 as uuidv4 } from 'uuid';
 
 const SAVE_INTERVAL_MS = 2000;
 
 export default function TextEditor() {
   const { permission } = usePermission();
-
   const { id: documentId } = useParams();
   const [socket, setSocket] = useState();
   const [quill, setQuill] = useState();
   const [username, setUsername] = useState(() => {
-    const storedUsername = localStorage.getItem("username");
+    let storedUsername = localStorage.getItem("username");
     if (!storedUsername) {
-      const newUsername = prompt("Please enter your username:");
-      if (newUsername) {
-        localStorage.setItem("username", newUsername);
-        return newUsername;
-      }
+      storedUsername = uuidv4(); // Generate a random UUID as username
+      localStorage.setItem("username", storedUsername);
     }
     return storedUsername;
   });
@@ -50,16 +47,14 @@ export default function TextEditor() {
   const [owner, setOwner] = useState("");
   const [isEditable, setIsEditable] = useState(permission);
   const [cursor, setCursor] = useState(0);
+
   useEffect(() => {
     if (socket == null || quill == null) return;
     socket.once("load-document", (document) => {
       setOwner(document.owner);
+      setIsEditable(document.isEditable);
       quill.setContents(document.data);
-      if (document.isEditable) {
-        quill.enable(true);
-      } else {
-        quill.enable(username === document.owner);
-      }
+      quill.enable(document.isEditable || username === document.owner);
     });
 
     socket.emit("get-document", documentId, username, isEditable);
@@ -141,9 +136,9 @@ export default function TextEditor() {
   }, []);
 
   const [textModal, setTextModal] = useState(false);
-  const writePrompt = () => {
-    setTextModal(!textModal);
-  };
+  // const writePrompt = () => {
+  //   setTextModal(!textModal);
+  // };
 
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
@@ -173,7 +168,7 @@ export default function TextEditor() {
     } catch (error) {
       console.error(error);
     } finally {
-      setLoading(false);
+      // setLoading(false);
     }
     quill.enable(true);
   };
